@@ -1,8 +1,11 @@
-
 class BipartiteGraph<L, R> {
-  private left: Map<L, Set<R>>;
-  private right: Map<R, Set<L>>;
+  readonly left: Map<L, Set<R>>;
+  readonly right: Map<R, Set<L>>;
 
+  constructor() {
+    this.left = new Map<L, Set<R>>();
+    this.right = new Map<R, Set<L>>();
+  }
 
   public addEdge(leftVertex: L, rightVertex: R): this {
     if (!this.left.has(leftVertex)) {
@@ -13,19 +16,31 @@ class BipartiteGraph<L, R> {
       this.right.set(rightVertex, new Set<L>());
     }
 
-    this.left.get(leftVertex).add(rightVertex);
-    this.right.get(rightVertex).add(leftVertex);
+    (this.left.get(leftVertex) as Set<R>).add(rightVertex);
+    (this.right.get(rightVertex) as Set<L>).add(leftVertex);
 
+    return this;
+  }
 
-    // this.left.set(
-    //   leftVertex,
-    //   (this.left.has(leftVertex) ? this.left.get(leftVertex) : new Set<R>()).add(rightVertex),
-    // );
+  public removeEdge(leftVertex: L, rightVertex: R): this {
+    this.left.delete(leftVertex);
+    this.right.delete(rightVertex);
 
-    // this.right.set(
-    //   rightVertex,
-    //   (this.right.has(rightVertex) ? this.right.get(rightVertex) : new Set<L>()).add(leftVertex),
-    // );
+    for (const key of Array.from(this.left.keys())) {
+      (this.left.get(key) as Set<R>).delete(rightVertex);
+
+      if ((this.left.get(key) as Set<R>).size === 0) {
+        this.left.delete(key);
+      }
+    }
+
+    for (const key of Array.from(this.right.keys())) {
+      (this.right.get(key) as Set<L>).delete(leftVertex);
+
+      if ((this.right.get(key) as Set<L>).size === 0) {
+        this.right.delete(key);
+      }
+    }
 
     return this;
   }
